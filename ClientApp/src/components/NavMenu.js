@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
+import { Button, Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
 
@@ -21,6 +21,32 @@ export class NavMenu extends Component {
     });
   }
 
+  async downloadReport() {
+    try {
+      const response = await fetch('/api/reports/generate-report', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Reports.zip'; 
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        console.error('Failed to download report');
+      }
+    } catch (error) {
+      console.error('Error downloading report:', error);
+    }
+  }
+
   render() {
     return (
       <header>
@@ -30,13 +56,22 @@ export class NavMenu extends Component {
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
             <ul className="navbar-nav flex-grow">
               <NavItem>
+                <Button color="primary" onClick={this.downloadReport}>Download Report</Button>
+              </NavItem>
+              <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/">Departments</NavLink>
               </NavItem>
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/expenses">Expenses</NavLink>
               </NavItem>
               <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/expense-details">Expense details</NavLink>
+              </NavItem>
+              <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/expense-types">Expense types</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/employees">Employees</NavLink>
               </NavItem>
             </ul>
           </Collapse>

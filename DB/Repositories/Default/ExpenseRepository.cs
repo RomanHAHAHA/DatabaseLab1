@@ -4,7 +4,7 @@ using DatabaseLab1.Domain.Entities;
 using Microsoft.Extensions.Options;
 using System.Data.SqlClient;
 
-namespace DatabaseLab1.DB.Repositories;
+namespace DatabaseLab1.DB.Repositories.Default;
 
 public class ExpenseRepository : IExpenseRepository
 {
@@ -17,6 +17,7 @@ public class ExpenseRepository : IExpenseRepository
 
     private SqlConnection CreateConnection() => new(_connectionString);
 
+    #region CRUD
     public async Task<bool> CreateAsync(Expense entity)
     {
         const string sqlQuery = @"
@@ -116,12 +117,26 @@ public class ExpenseRepository : IExpenseRepository
         var rowsAffected = await command.ExecuteNonQueryAsync();
         return rowsAffected > 0;
     }
+    #endregion
 
-    public async Task<IQueryable<Expense>> GetByExpenseTypeId()
+    public async Task<IEnumerable<Expense>> GetExpensesExceedingTypeLimit()
     {
-        const string sqlQuery = "SELECT * " +
-            "FROM Expenses " +
-            "WHERE ExpenseTypeId = 7";
+        const string sqlQuery = @"
+            SELECT 
+                e.ExpenseId,
+                e.Code,
+                e.Amount,
+                e.Date,
+                e.DepartmentId,
+                e.ExpenseTypeId
+            FROM 
+                Expenses e
+            WHERE 
+                e.Amount > (SELECT LimitAmount 
+                            FROM ExpenseTypes et 
+                            WHERE et.ExpenseTypeId = e.ExpenseTypeId)
+        ";
+
         var expenses = new List<Expense>();
 
         using var connection = CreateConnection();
@@ -135,20 +150,36 @@ public class ExpenseRepository : IExpenseRepository
             expenses.Add(Expense.FromReader(reader));
         }
 
-        return expenses.AsQueryable();
+        return expenses;
     }
 
-    public async Task<IQueryable<Expense>> GetByDepartmentId()
+    public async Task<IEnumerable<Expense>> GetExpensesAboveAverageForType(long expenseTypeId)
     {
-        const string sqlQuery = "SELECT * " +
-            "FROM Expenses " +
-            "WHERE DepartmentId = 8";
+        const string sqlQuery = @"
+            SELECT 
+                e.ExpenseId,
+                e.Code,
+                e.ExpenseTypeId,
+                e.DepartmentId,
+                e.Amount,
+                e.Date
+            FROM 
+                Expenses e
+            WHERE 
+                e.ExpenseTypeId = @ExpenseTypeId
+                AND e.Amount > 
+                (SELECT AVG(e2.Amount) 
+                 FROM Expenses e2 
+                 WHERE e2.ExpenseTypeId = e.ExpenseTypeId);
+        ";
+
         var expenses = new List<Expense>();
 
         using var connection = CreateConnection();
         await connection.OpenAsync();
 
         using var command = new SqlCommand(sqlQuery, connection);
+        command.Parameters.AddWithValue("@ExpenseTypeId", expenseTypeId);
         using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
@@ -156,69 +187,6 @@ public class ExpenseRepository : IExpenseRepository
             expenses.Add(Expense.FromReader(reader));
         }
 
-        return expenses.AsQueryable();
-    }
-
-    public async Task<IQueryable<Expense>> GetByAmount()
-    {
-        const string sqlQuery = "SELECT * " +
-            "FROM Expenses " +
-            "WHERE Amount >= 500";
-        var expenses = new List<Expense>();
-
-        using var connection = CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand(sqlQuery, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            expenses.Add(Expense.FromReader(reader));
-        }
-
-        return expenses.AsQueryable();
-    }
-
-    public async Task<IQueryable<Expense>> GetByDate()
-    {
-        const string sqlQuery = "SELECT * " +
-            "FROM Expenses " +
-            "WHERE Date >= '2023-01-01'";
-        var expenses = new List<Expense>();
-
-        using var connection = CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand(sqlQuery, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            expenses.Add(Expense.FromReader(reader));
-        }
-
-        return expenses.AsQueryable();
-    }
-
-    public async Task<IQueryable<Expense>> GetByCodeLength()
-    {
-        const string sqlQuery = "SELECT * " +
-            "FROM Expenses " +
-            "WHERE LEN(CODE) >= 10";
-        var expenses = new List<Expense>();
-
-        using var connection = CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand(sqlQuery, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            expenses.Add(Expense.FromReader(reader));
-        }
-
-        return expenses.AsQueryable();
+        return expenses;
     }
 }

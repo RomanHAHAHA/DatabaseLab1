@@ -1,5 +1,5 @@
 ﻿using DatabaseLab1.DB.Interfaces;
-using DatabaseLab1.Domain.Dtos;
+using DatabaseLab1.Domain.Dtos.ExpenseDtos;
 using DatabaseLab1.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +16,7 @@ public class ExpensesController : ControllerBase
         _repository = repository;
     }
 
+    #region CRUD
     [HttpPost("create")]
     public async Task<IActionResult> Create(ExpenseCreateDto expenseDto)
     {
@@ -82,24 +83,13 @@ public class ExpensesController : ControllerBase
 
         return Ok();
     }
+    #endregion
 
-    [HttpGet("get-by-department-id")]
-    public async Task<IEnumerable<Expense>> GetByDepartmentId()
-        => await _repository.GetByDepartmentId();
+    [HttpGet("exceeding")]
+    public async Task<IEnumerable<Expense>> GetExpensesExceedingTypeLimit()
+        => await _repository.GetExpensesExceedingTypeLimit();
 
-    [HttpGet("get-by-expense-type-id")]
-    public async Task<IEnumerable<Expense>> GetByExpenseTypeId()
-        => await _repository.GetByExpenseTypeId();
-
-    [HttpGet("get-by-amount")]
-    public async Task<IEnumerable<Expense>> GetByAmount()
-        => await _repository.GetByAmount();
-
-    [HttpGet("get-by-date")]
-    public async Task<IEnumerable<Expense>> GetByDate()
-        => await _repository.GetByDate();
-
-    [HttpGet("get-by-code-length")]
-    public async Task<IEnumerable<Expense>> GetByCodeLength()
-        => await _repository.GetByCodeLength();
+    [HttpGet("above-avg/{expenseTypeId}")]
+    public async Task<IEnumerable<Expense>> GetExpensesAboveAverageForType(long expenseTypeId)
+        => await _repository.GetExpensesAboveAverageForType(expenseTypeId);
 }

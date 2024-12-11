@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import ExpenseTable from '../Tables/ExpenseTable';
 import ExpenseForm from '../Forms/ExpenseForm';
+import TableGenerator from '../components/TableGenerator'; 
 
 const Expenses = () => {
-    const [expenses, setExpenses] = useState([]);
+    const [expenses, setExpenses] = useState([]); 
+    const [queryResult, setQueryResult] = useState([]); 
     const [expenseToEdit, setExpenseToEdit] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(null);
-    
+
     const toggleDropdown = (expenseId) => {
         setDropdownOpen(prev => (prev === expenseId ? null : expenseId));
     };
@@ -36,57 +38,23 @@ const Expenses = () => {
         setExpenseToEdit(expense);
     };
 
-    // Функции для получения расходов по различным критериям
-    const fetchByDepartmentId = async () => {
+    const fetchExpensesExceedingTypeLimit = async () => {
         try {
-            const response = await fetch('/api/expenses/get-by-department-id');
-            if (!response.ok) throw new Error('Failed to fetch expenses by department ID');
+            const response = await fetch('/api/expenses/exceeding');
+            if (!response.ok) throw new Error('Failed to fetch expenses exceeding type limit');
             const data = await response.json();
-            setExpenses(data);
+            setQueryResult(data); 
         } catch (error) {
             console.error(error);
         }
     };
 
-    const fetchByExpenseTypeId = async () => {
+    const fetchExpensesAboveAverageForType = async (expenseTypeId) => {
         try {
-            const response = await fetch('/api/expenses/get-by-expense-type-id');
-            if (!response.ok) throw new Error('Failed to fetch expenses by expense type ID');
+            const response = await fetch(`/api/expenses/above-avg/${expenseTypeId}`);
+            if (!response.ok) throw new Error('Failed to fetch expenses above average for type');
             const data = await response.json();
-            setExpenses(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const fetchByAmount = async () => {
-        try {
-            const response = await fetch('/api/expenses/get-by-amount');
-            if (!response.ok) throw new Error('Failed to fetch expenses by amount');
-            const data = await response.json();
-            setExpenses(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const fetchByDate = async () => {
-        try {
-            const response = await fetch('/api/expenses/get-by-date');
-            if (!response.ok) throw new Error('Failed to fetch expenses by date');
-            const data = await response.json();
-            setExpenses(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const fetchByCodeLength = async () => {
-        try {
-            const response = await fetch('/api/expenses/get-by-code-length');
-            if (!response.ok) throw new Error('Failed to fetch expenses by code length');
-            const data = await response.json();
-            setExpenses(data);
+            setQueryResult(data); 
         } catch (error) {
             console.error(error);
         }
@@ -105,28 +73,26 @@ const Expenses = () => {
                         onExpenseCreated={fetchAllExpenses}
                         onExpenseUpdated={fetchAllExpenses}
                     />
+                    <div className="mt-3">
+                        <button 
+                            className="btn btn-primary btn-block mb-2" 
+                            onClick={fetchExpensesExceedingTypeLimit}
+                        >
+                            Отримати витрати, ліміт яких більше за встановлений(з таблиці ExpenseTypes)
+                        </button>
+                        <button 
+                            className="btn btn-primary btn-block mb-2" 
+                            onClick={() => {
+                                const expenseTypeId = prompt('Enter Expense Type ID:'); 
+                                if (expenseTypeId) fetchExpensesAboveAverageForType(expenseTypeId);
+                            }}
+                        >
+                            Отримати витрати з певним типом, значення якиз більше за середнє
+                        </button>
+                    </div>
                 </div>
                 <div className="col-md-8">
                     <h4>Expenses List</h4>
-                    <div className="mb-3">
-                        <div className="d-flex flex-column">
-                            <button className="btn btn-primary mb-2" onClick={fetchByDepartmentId}>
-                                Get Department ID = 8
-                            </button>
-                            <button className="btn btn-secondary mb-2" onClick={fetchByExpenseTypeId}>
-                                Get Expense Type ID = 7
-                            </button>
-                            <button className="btn btn-success mb-2" onClick={fetchByAmount}>
-                                Get Amount more than 500
-                            </button>
-                            <button className="btn btn-info mb-2" onClick={fetchByDate}>
-                                Get Date more than 01.01.2023
-                            </button>
-                            <button className="btn btn-warning" onClick={fetchByCodeLength}>
-                                Get Code Length more than 10
-                            </button>
-                        </div>
-                    </div>
                     <ExpenseTable
                         expenses={expenses}
                         handleEditExpense={handleEditExpense}
@@ -134,6 +100,12 @@ const Expenses = () => {
                         toggleDropdown={toggleDropdown}
                         dropdownOpen={dropdownOpen}
                     />
+                    {queryResult.length > 0 && (
+                        <div className="mt-4">
+                            <h5>Query Results</h5>
+                            <TableGenerator data={queryResult} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

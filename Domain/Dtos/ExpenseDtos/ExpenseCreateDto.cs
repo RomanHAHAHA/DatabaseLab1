@@ -2,7 +2,7 @@
 using DatabaseLab1.Domain.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace DatabaseLab1.Domain.Dtos;
+namespace DatabaseLab1.Domain.Dtos.ExpenseDtos;
 
 public class ExpenseCreateDto
 {

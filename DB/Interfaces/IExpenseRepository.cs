@@ -4,13 +4,7 @@ namespace DatabaseLab1.DB.Interfaces;
 
 public interface IExpenseRepository : IRepository<Expense>
 {
-    Task<IQueryable<Expense>> GetByExpenseTypeId();
+    Task<IEnumerable<Expense>> GetExpensesExceedingTypeLimit();
 
-    Task<IQueryable<Expense>> GetByDepartmentId();
-
-    Task<IQueryable<Expense>> GetByAmount();
-
-    Task<IQueryable<Expense>> GetByDate();
-
-    Task<IQueryable<Expense>> GetByCodeLength();
+    Task<IEnumerable<Expense>> GetExpensesAboveAverageForType(long expenseTypeId);
 }

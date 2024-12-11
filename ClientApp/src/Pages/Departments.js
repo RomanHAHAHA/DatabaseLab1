@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import DepartmentTable from '../Tables/DepartmentTable.js';
+import DepartmentTable from '../Tables/DepartmentTable';
 import DepartmentForm from '../Forms/DepartmentForm';
+import TableGenerator from '../components/TableGenerator';
 
 const Departments = () => {
-    const [departments, setDepartments] = useState([]);
+    const [departments, setDepartments] = useState([]); 
+    const [data, setData] = useState([]); 
     const [departmentToEdit, setDepartmentToEdit] = useState(null);
-    const [dropdownOpen, setDropdownOpen] = useState(null);
-    
-    const toggleDropdown = (actorId) => {
-        setDropdownOpen(prev => (prev === actorId ? null : actorId));
+    const [dropdownOpen, setDropdownOpen] = useState(null); 
+
+    const toggleDropdown = (departmentId) => {
+        setDropdownOpen((prev) => (prev === departmentId ? null : departmentId));
     };
 
     const fetchAllDepartments = async () => {
@@ -17,6 +19,17 @@ const Departments = () => {
             if (!response.ok) throw new Error('Failed to fetch departments');
             const data = await response.json();
             setDepartments(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const fetchData = async (endpoint) => {
+        try {
+            const response = await fetch(`/api/departments/${endpoint}`);
+            if (!response.ok) throw new Error(`Failed to fetch data from ${endpoint}`);
+            const result = await response.json();
+            setData(result);
         } catch (error) {
             console.error(error);
         }
@@ -36,28 +49,6 @@ const Departments = () => {
         setDepartmentToEdit(department);
     };
 
-    const fetchByEmployeeCount = async () => {
-        try {
-            const response = await fetch('/api/departments/by-employee-count');
-            if (!response.ok) throw new Error('Failed to fetch departments by employee count');
-            const data = await response.json();
-            setDepartments(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const fetchByNameStart = async () => {
-        try {
-            const response = await fetch('/api/departments/by-name-start');
-            if (!response.ok) throw new Error('Failed to fetch departments by name start');
-            const data = await response.json();
-            setDepartments(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     useEffect(() => {
         fetchAllDepartments();
     }, []);
@@ -72,16 +63,9 @@ const Departments = () => {
                         onDepartmentUpdated={fetchAllDepartments}
                     />
                 </div>
+
                 <div className="col-md-8">
                     <h4>Departments List</h4>
-                    <div className="mb-3">
-                        <button className="btn btn-primary me-2" onClick={fetchByEmployeeCount}>
-                            Get Employee Count more 500 
-                        </button>
-                        <button className="btn btn-secondary" onClick={fetchByNameStart}>
-                            Get Departments Name Start with 'o'
-                        </button>
-                    </div>
                     <DepartmentTable
                         departments={departments}
                         handleEditDepartment={handleEditDepartment}
@@ -89,6 +73,54 @@ const Departments = () => {
                         toggleDropdown={toggleDropdown}
                         dropdownOpen={dropdownOpen}
                     />
+                </div>
+            </div>
+
+            <div className="row mt-4">
+                <div className="col-md-4">
+                    <h4>Fetch Data</h4>
+                    <div className="d-flex flex-column">
+                        <button
+                            className="btn btn-primary mb-2"
+                            onClick={() => fetchData('expense-amount')}
+                        >
+                            Отримати відділи з сумою їх витрат
+                        </button>
+                        <button
+                            className="btn btn-primary mb-2"
+                            onClick={() => fetchData('employee-count')}
+                        >
+                            Отримати кількість зареєстрованих (які внесені в БД) співробітників у кожному відділі
+                        </button>
+                        <button
+                            className="btn btn-primary mb-2"
+                            onClick={() => fetchData('all-expenses')}
+                        >
+                            Отримати кількість одобрених і неободрених витрат кожного відділу
+                        </button>
+                        <button
+                            className="btn btn-primary mb-2"
+                            onClick={() => fetchData('total-expenses-data')}
+                        >
+                            Отримати відділи з сумою їх витрат, кількістю одобрених витрат та максимальним лімітом
+                        </button>
+                        <button
+                            className="btn btn-primary mb-2"
+                            onClick={() => fetchData('expenses-above-threshold?threshold=699')}
+                        >
+                            Отримати відділи, сума витрат яких більше за поріг (699)
+                        </button>
+                        <button
+                            className="btn btn-primary mb-2"
+                            onClick={() => fetchData('above-average-employees')}
+                        >
+                            Отримати відділи, кількість всіх(незареєстрованих і зареєстрованих) співробітників яких більше середнього
+                        </button>
+                    </div>
+                </div>
+                <div className="col-md-8">
+                    <h4>Query Results</h4>
+                    <TableGenerator data={data} />
                 </div>
             </div>
         </div>

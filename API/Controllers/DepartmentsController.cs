@@ -1,5 +1,6 @@
 ﻿using DatabaseLab1.DB.Interfaces;
-using DatabaseLab1.Domain.Dtos;
+using DatabaseLab1.Domain.Dtos.DepartmentDtos;
+using DatabaseLab1.Domain.Dtos.ExpenseDtos;
 using DatabaseLab1.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,18 +10,19 @@ namespace DatabaseLab1.API.Controllers;
 [ApiController]
 public class DepartmentsController : ControllerBase
 {
-    private readonly IDepartmentRepository _repository;
+    private readonly IDepartmentRepository _departmentRepository;
 
     public DepartmentsController(IDepartmentRepository repository)
     {
-        _repository = repository;
+        _departmentRepository = repository;
     }
 
+    #region CRUD
     [HttpPost("create")]
     public async Task<IActionResult> Create(DepartmentCreateDto departmentDto)
     {
         var departmentEntity = departmentDto.ToEntity();
-        var createResult = await _repository.CreateAsync(departmentEntity);
+        var createResult = await _departmentRepository.CreateAsync(departmentEntity);
 
         if (!createResult)
         {
@@ -32,12 +34,12 @@ public class DepartmentsController : ControllerBase
 
     [HttpGet("get-all")]
     public async Task<IEnumerable<Department>> GetAll()
-        => await _repository.GetAllAsync();
+        => await _departmentRepository.GetAllAsync();
 
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(long id)
     {
-        var department = await _repository.GetByIdAsync(id);
+        var department = await _departmentRepository.GetByIdAsync(id);
 
         return department is null ? NotFound() : Ok(department);
     }
@@ -45,14 +47,14 @@ public class DepartmentsController : ControllerBase
     [HttpDelete("delete/{id}")]
     public async Task<IActionResult> Remove(long id)
     {
-        var department = await _repository.GetByIdAsync(id);
+        var department = await _departmentRepository.GetByIdAsync(id);
 
         if (department is null)
         {
             return NotFound();
         }
 
-        var removeResult = await _repository.RemoveAsync(id);
+        var removeResult = await _departmentRepository.RemoveAsync(id);
 
         if (!removeResult)
         {
@@ -65,7 +67,7 @@ public class DepartmentsController : ControllerBase
     [HttpPut("update/{id}")]
     public async Task<IActionResult> Update(long id, DepartmentCreateDto departmentDto)
     {
-        var actor = await _repository.GetByIdAsync(id);
+        var actor = await _departmentRepository.GetByIdAsync(id);
 
         if (actor is null)
         {
@@ -73,7 +75,7 @@ public class DepartmentsController : ControllerBase
         }
 
         var updatedDepartmentData = departmentDto.ToEntity(id);
-        var updateResult = await _repository.UpdateAsync(updatedDepartmentData);
+        var updateResult = await _departmentRepository.UpdateAsync(updatedDepartmentData);
 
         if (!updateResult)
         {
@@ -82,12 +84,30 @@ public class DepartmentsController : ControllerBase
 
         return Ok();
     }
+    #endregion
 
-    [HttpGet("by-employee-count")]
-    public async Task<IEnumerable<Department>> GetByEmplpoyeeCount() 
-        => await _repository.GetByEmployeeCount();
+    [HttpGet("expense-amount")]
+    public async Task<IEnumerable<DepartmentExpenseDto>> GetExpenseAmountOfEachDepartment() 
+        => await _departmentRepository.GetExpenseAmountOfEachDepartment();
 
-    [HttpGet("by-name-start")]
-    public async Task<IEnumerable<Department>> GetByNameStart() 
-        => await _repository.GetByNameStart();
+    [HttpGet("employee-count")]
+    public async Task<IEnumerable<DepartmentEmployeeCountDto>> GetEmployeeCountPerDepartment()
+        => await _departmentRepository.GetEmployeeCountPerDepartment();
+
+    [HttpGet("all-expenses")]
+    public async Task<IEnumerable<DepartmentExpenseApprovalDto>> GetApprovedAndNotApprovedExpenses()
+        => await _departmentRepository.GetApprovedAndNotApprovedExpenses();
+
+    [HttpGet("total-expenses-data")]
+    public async Task<IEnumerable<DepartmentTotalExpenseDto>> GetFilteredTotalExpensesPerDepartment()
+        => await _departmentRepository.GetFilteredTotalExpensesPerDepartment();
+
+    [HttpGet("expenses-above-threshold")]
+    public async Task<IEnumerable<DepartmentExpenseDto>> GetDepartmentsWithExpensesAboveThreshold(
+        decimal threshold)
+        => await _departmentRepository.GetDepartmentsWithExpensesAboveThreshold(threshold);
+
+    [HttpGet("above-average-employees")]
+    public async Task<IEnumerable<Department>> GetDepartmentsAboveAverageEmployees()
+        => await _departmentRepository.GetDepartmentsAboveAverageEmployees();
 }

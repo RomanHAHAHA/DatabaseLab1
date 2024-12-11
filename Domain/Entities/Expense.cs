@@ -25,7 +25,8 @@ public class Expense
             ExpenseTypeId = long.Parse(reader[nameof(ExpenseTypeId)].ToString() ?? string.Empty),
             DepartmentId = long.Parse(reader[nameof(DepartmentId)].ToString() ?? string.Empty),
             Amount = decimal.Parse(reader[nameof(Amount)].ToString() ?? string.Empty),
-            Date = DateTime.Parse(reader[nameof(Date)].ToString() ?? string.Empty)
+            Date = DateTime.Parse(reader[nameof(Date)].ToString() ?? string.Empty),
         };
     }
 }
+

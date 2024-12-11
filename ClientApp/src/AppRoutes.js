@@ -1,6 +1,8 @@
 import Departments from "./Pages/Departments";
+import ExpenseDetails from "./Pages/ExpenseDetails";
 import Expenses from "./Pages/Expenses";
 import ExpenseTypes from "./Pages/ExpenseTypes";
+import Employees from "./Pages/Employees"
 
 const AppRoutes = [
   {
@@ -14,6 +16,14 @@ const AppRoutes = [
   {
     path: '/expense-types',
     element: <ExpenseTypes />
+  },
+  {
+    path: '/expense-details',
+    element: <ExpenseDetails />
+  },
+  {
+    path: '/employees',
+    element: <Employees />
   },
 ];
 

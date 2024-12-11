@@ -1,12 +1,13 @@
-﻿using DatabaseLab1.Domain.Entities;
+﻿using DatabaseLab1.Domain.Dtos.ExpenseTypeDtos;
+using DatabaseLab1.Domain.Entities;
 
 namespace DatabaseLab1.DB.Interfaces;
 
 public interface IExpenseTypeRepository : IRepository<ExpenseType>
 {
-    Task<IQueryable<ExpenseType>> GetByDescriptionLettersCount();
+    Task<IEnumerable<ExpenseTypeCountDto>> GetAverageLimitPerExpenseType();
 
-    Task<IQueryable<ExpenseType>> GetByLimitAmount();
+    Task<IEnumerable<ExpenseTypeMaxDto>> GetMaxApprovedExpensesPerType();
 
-    Task<IQueryable<ExpenseType>> GetByNameStart();
+    Task<IEnumerable<ExpenseType>> GetUnusedExpenseTypesInDepartment(long departmentId);
 }

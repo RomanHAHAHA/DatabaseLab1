@@ -1,5 +1,5 @@
 ﻿using DatabaseLab1.DB.Interfaces;
-using DatabaseLab1.Domain.Dtos;
+using DatabaseLab1.Domain.Dtos.ExpenseTypeDtos;
 using DatabaseLab1.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,6 +16,7 @@ public class ExpenseTypesController : ControllerBase
         _repository = repository;
     }
 
+    #region CRUD
     [HttpPost("create")]
     public async Task<IActionResult> Create(ExpenseTypeCreateDto expenseTypeDto)
     {
@@ -82,16 +83,17 @@ public class ExpenseTypesController : ControllerBase
 
         return Ok();
     }
+    #endregion
 
-    [HttpGet("by-limit-amount")]
-    public async Task<IEnumerable<ExpenseType>> GetByLimitAmount()
-        => await _repository.GetByLimitAmount();
+    [HttpGet("average-limit-per-type")]
+    public async Task<IEnumerable<ExpenseTypeCountDto>> GetAverageLimitPerExpenseType()
+        => await _repository.GetAverageLimitPerExpenseType();
 
-    [HttpGet("by-description-length")]
-    public async Task<IEnumerable<ExpenseType>> GetByDescriptionLength()
-        => await _repository.GetByDescriptionLettersCount();
+    [HttpGet("max-approved-per-type")]
+    public async Task<IEnumerable<ExpenseTypeMaxDto>> GetMaxApprovedExpensesPerType()
+        => await _repository.GetMaxApprovedExpensesPerType();
 
-    [HttpGet("by-name-start")]
-    public async Task<IEnumerable<ExpenseType>> GetByNameStart()
-        => await _repository.GetByNameStart();
+    [HttpGet("unused-by-department/{departmentId}")]
+    public async Task<IEnumerable<ExpenseType>> GetUnusedExpenseTypesInDepartment(long departmentId)
+        => await _repository.GetUnusedExpenseTypesInDepartment(departmentId);
 }
